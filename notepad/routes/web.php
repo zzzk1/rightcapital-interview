@@ -17,4 +17,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+/**
+ * This Router use to route HTTP request get notepad detail info. 
+ */
 Route::get('/notepad/{noteId}', [NotePadController::class, 'getDetail']);
+
+/**
+ * This Router use to route HTTP request update notepad info. 
+ */
+Route::post('/notepad/{noteId}', [NotePadController::class, 'update']);
