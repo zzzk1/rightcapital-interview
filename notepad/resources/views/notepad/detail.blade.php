@@ -50,8 +50,9 @@
 <body>
     <div class="container">
         <h1>Note Details</h1>
-        <form id="note-form" action="/update-note" method="post">
+        <form id="note-form" action="/notepad/{{ $note->id }}" method="post">
             @csrf
+            @method('POST')
             <label for="title">Title:</label><br>
             <input type="text" id="title" name="title" value="{{ $note->title }}"><br><br>
             <label for="content">Content:</label><br>
@@ -60,7 +61,7 @@
             <h3>Tags:</h3>
             <div id="tag-container">
                 @foreach ($tags as $tag)
-                    <span class="tag">{{ $tag->name }} <span class="tag-remove" onclick="removeTag('{{ $tag->id }}')">x</span></span>
+                    <span class="tag">{{ $tag->name }} <span class="tag-remove" onclick="removeTag(this, '{{ $tag->id }}')">x</span></span>
                 @endforeach
             </div>
             <input type="text" id="tag-input" placeholder="Add a tag">
@@ -70,6 +71,7 @@
         </form>
     </div>
 
+    <!-- TODO: use a drop down box to select tag -->
     <script>
         function addTag() {
             var tagInput = document.getElementById('tag-input');
@@ -82,10 +84,6 @@
                 tagContainer.appendChild(tagSpan);
                 tagInput.value = '';
             }
-        }
-
-        function removeTag(element) {
-            element.parentNode.remove();
         }
     </script>
 </body>
