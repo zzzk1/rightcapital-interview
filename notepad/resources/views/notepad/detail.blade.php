@@ -31,22 +31,62 @@
         li {
             margin-bottom: 5px;
         }
+        .hidden {
+            display: none;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        .tag-remove {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Note Details</h1>
-        <article>
-            <h2>{{ $note->title }}</h2>
-            <h2>{{ $note->content }}</h2>
+        <form id="note-form" action="/update-note" method="post">
+            @csrf
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" value="{{ $note->title }}"><br><br>
+            <label for="content">Content:</label><br>
+            <textarea id="content" name="content" rows="5">{{ $note->content }}</textarea><br><br>
             
             <h3>Tags:</h3>
-            <ul>
+            <div id="tag-container">
                 @foreach ($tags as $tag)
-                    <li>{{ $tag->name }}</li>
+                    <span class="tag">{{ $tag->name }} <span class="tag-remove" onclick="removeTag('{{ $tag->id }}')">x</span></span>
                 @endforeach
-            </ul>
-        </article>
+            </div>
+            <input type="text" id="tag-input" placeholder="Add a tag">
+            <button type="button" onclick="addTag()">Add Tag</button><br><br>
+            
+            <button type="submit">Save</button>
+        </form>
     </div>
+
+    <script>
+        function addTag() {
+            var tagInput = document.getElementById('tag-input');
+            var tagName = tagInput.value.trim();
+            if (tagName !== '') {
+                var tagContainer = document.getElementById('tag-container');
+                var tagSpan = document.createElement('span');
+                tagSpan.classList.add('tag');
+                tagSpan.innerHTML = tagName + ' <span class="tag-remove" onclick="removeTag(this)">x</span>';
+                tagContainer.appendChild(tagSpan);
+                tagInput.value = '';
+            }
+        }
+
+        function removeTag(element) {
+            element.parentNode.remove();
+        }
+    </script>
 </body>
 </html>
