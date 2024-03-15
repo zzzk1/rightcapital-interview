@@ -9,4 +9,5 @@ class NoteTag extends Model
 {
     protected $table = 'notes_tags';
     use HasFactory;
+    use SoftDeletes;
 }

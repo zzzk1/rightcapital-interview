@@ -13,7 +13,8 @@ class Note extends Model
 {
     protected $table = 'notes';
     use HasFactory;
-
+    use SoftDeletes;
+    
     /**
      * This method use to find many tags for target note.
      *

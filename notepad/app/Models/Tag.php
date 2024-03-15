@@ -13,9 +13,10 @@ class Tag extends Model
 {
     protected $table = 'tags';
     use HasFactory;
+    use SoftDeletes;
 
     /**
-     * This method use to find many notes for target note.
+     * This method use to find many notes for target tag.
      *
      * @return BelongsToMany A lot of note classes or only one, maybe none.
      */
