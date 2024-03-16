@@ -7,6 +7,9 @@ use App\Models\Note;
 use App\Models\Tag;
 use App\Models\NoteTag;
 
+use App\Http\Requests\UpdateNotePadRequest;
+use App\Http\Requests\CreateNotePadRequest;
+
 class NotePadController extends Controller
 {
     /**
@@ -32,11 +35,11 @@ class NotePadController extends Controller
      * This method use to update a notepad by note id, the notepad contains note title, note context and many tags.
      * We choice delete old bind relationship first, then bind new relationship.
      * 
-     * @Param request This request carries Note and list of Tags belonging to it.
+     * @Param UpdateNotePadRequest This request carries Note and list of Tags belonging to it.
      * @Param noteId Table note primary key.
      * @Return Whether the update operation was successful.
      */
-    public function update(Request $request, $noteId)
+    public function update(UpdateNotePadRequest $request, $noteId)
     {
         // Fisrt update note's title and content.
         $note = Note::findOrFail($noteId);
@@ -74,7 +77,7 @@ class NotePadController extends Controller
      * @Param request Http request.
      * @Param noteId Table note primary key.
      */
-    public function delete(Request $request, $noteId)
+    public function delete($noteId)
     {
         // First unbind relationship logical.
         NoteTag::where('note_id', $noteId)->delete();
@@ -83,6 +86,26 @@ class NotePadController extends Controller
         $note = Note::find($noteId);
         $note->delete();
 
+        return response()->json([]);
+    }
+
+    /**
+     * Create a new notepad must contains title, content. tag can be empty.
+     * 
+     * @Param CreateNotePadRequest
+     */
+    public function create(CreateNotePadRequest $request) {
+        // search before save.
+        $existNote = Note::where('title', $request->title)->first();
+
+        // create failed target already exist.
+        if ($existNote != null) {
+            return response()->json([]);
+        }
+
+        $note = new Note($request->all());
+
+        $note->save();
         return response()->json([]);
     }
 }

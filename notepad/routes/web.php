@@ -18,16 +18,21 @@ Route::get('/', function () {
 });
 
 /**
- * This Router use to route HTTP request to get notepad detail info. 
+ * Get notepad detail info. 
  */
 Route::get('/notepad/{noteId}', [NotePadController::class, 'getDetail']);
 
 /**
- * This Router use to route HTTP request to update notepad info. 
+ * Update notepad info. 
  */
 Route::post('/notepad/{noteId}', [NotePadController::class, 'update']);
 
 /**
- * This Router use to route HTTP request to delete notepad logical. 
+ * Delete notepad logical. 
  */
 Route::delete('/notepad/{noteId}', [NotePadController::class, 'delete']);
+
+/**
+ * Create notepad info. 
+ */
+Route::post('/notepad/', [NotePadController::class, 'create']);

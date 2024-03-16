@@ -90,4 +90,25 @@ class NotePadControllerTest extends TestCase
             ]);
         }
     }
+
+    /**
+     * This method test create function.
+     */
+    public function testCreate(): void
+    {
+        // create fake data without tag.
+        $requestCreateNote = [
+            'title' => 'create title',
+            'content' => 'create content',
+        ];
+        // sent request
+        $resp = $this->post('/notepad/', $requestCreateNote);
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => $requestCreateNote['title'],
+            'content' => $requestCreateNote['content']
+        ]);
+    }
+
 }
