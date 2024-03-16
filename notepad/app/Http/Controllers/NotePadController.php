@@ -67,4 +67,22 @@ class NotePadController extends Controller
 
         return response()->json($data);
     }
+
+    /**
+     * This method can be used to delete any notepad of our choice. 
+     * 
+     * @Param request Http request.
+     * @Param noteId Table note primary key.
+     */
+    public function delete(Request $request, $noteId)
+    {
+        // First unbind relationship logical.
+        NoteTag::where('note_id', $noteId)->delete();
+        
+        // Delete note logical.
+        $note = Note::find($noteId);
+        $note->delete();
+
+        return response()->json([]);
+    }
 }

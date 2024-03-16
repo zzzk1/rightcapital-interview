@@ -60,4 +60,32 @@ class NotePadControllerTest extends TestCase
             ]);
         }
     }
+
+    /**
+     * This method test update function.
+     */
+    public function testDelete(): void
+    {
+        // create fake data.
+        $note = Note::factory()->create();
+        $tagList = Tag::factory()->count(5)->create();
+        $note->tags()->attach($tagList);
+
+        // sent request
+        $resp = $this->delete('/notepad/' . $note->id);
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'id' => $note->id,
+            'title' => $note->title,
+            'content' => $note->content
+        ]);
+
+        foreach ($tagList as $tag) {
+            $this->assertDatabaseHas('notes_tags', [
+                'note_id' => $note->id,
+                'tag_id' => $tag->id
+            ]);
+        }
+    }
 }
