@@ -37,10 +37,12 @@ class NotePadControllerTest extends TestCase
         $note = Note::factory()->create();
         $tagList = Tag::factory()->count(5)->create();
         $note->tags()->attach($tagList);
+
+        $updatedTagList = Tag::factory()->count(5)->create();
         $UpdatedData = [
             'title' => 'update title',
             'content' => 'update content',
-            'tagIds' => $tagList->pluck('id')->toArray()
+            'tagIds' => $updatedTagList->pluck('id')->toArray()
         ];
 
         // sent request. 
