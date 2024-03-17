@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotePadController;
 /*
@@ -46,3 +47,13 @@ Route::post('/copy/{noteId}', [NotePadController::class, 'copy']);
  * restore a notepad.
  */
 Route::post('/restore/{noteId}', [NotePadController::class, 'restore']);
+
+Route::prefix('tags')->group(function () {
+    Route::get('/', [TagController::class, 'index'])->name('tags.index');
+    Route::get('/create', [TagController::class, 'create'])->name('tags.create');
+    Route::post('/', [TagController::class, 'store'])->name('tags.store');
+    Route::get('/{id}', [TagController::class, 'show'])->name('tags.show');
+    Route::get('/{id}/edit', [TagController::class, 'edit'])->name('tags.edit');
+    Route::put('/{id}', [TagController::class, 'update'])->name('tags.update');
+    Route::delete('/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
+});
