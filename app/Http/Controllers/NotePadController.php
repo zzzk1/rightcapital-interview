@@ -4,12 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Note;
-use App\Models\Tag;
 use App\Models\NoteTag;
 
 use App\Http\Requests\UpdateNotePadRequest;
 use App\Http\Requests\CreateNotePadRequest;
-use App\Http\Requests\CopyNotePadRequest;
 
 define("LIMIT", 99);
 class NotePadController extends Controller
@@ -18,8 +16,8 @@ class NotePadController extends Controller
     /**
      * This method return a notepad, the notepad contains note title, note context and many tags.
      *
-     * @Param noteId Table note primary key.
-     * @Return detail data.
+     * @Param $noteId: Table note primary key.
+     * @Return Json data.
      */
     public function getDetail(string $noteId)
     {
@@ -36,10 +34,10 @@ class NotePadController extends Controller
 
     /**
      * This method use to update a notepad by note id, the notepad contains note title, note context and many tags.
-     * We choice delete old bind relationship first, then bind new relationship.
+     * We choose delete old bind relationship first, then bind new relationship.
      *
-     * @Param UpdateNotePadRequest This request carries Note and list of Tags belonging to it.
-     * @Param noteId Table note primary key.
+     * @Param UpdateNotePadRequest $request This request carries Note and list of Tags belonging to it.
+     * @Param $noteId: Table note primary key.
      * @Return Whether the update operation was successful.
      */
     public function update(UpdateNotePadRequest $request, $noteId)
@@ -79,8 +77,7 @@ class NotePadController extends Controller
     /**
      * This method can be used to delete any notepad of our choice.
      *
-     * @Param request Http request.
-     * @Param noteId Table note primary key.
+     * @Param $noteId: Table note primary key.
      */
     public function delete($noteId)
     {
@@ -97,7 +94,7 @@ class NotePadController extends Controller
     /**
      * Create a new notepad must contains title, content. tag can be empty.
      *
-     * @Param CreateNotePadRequest
+     * @Param $request:
      */
     public function create(CreateNotePadRequest $request)
     {
@@ -122,7 +119,7 @@ class NotePadController extends Controller
     /**
      * restore a deleted note.
      *
-     * @param noteId note primary key.
+     * @param $noteId note primary key.
      * @return Whether the copy operation was successful.
      */
     public function restore($noteId)
@@ -133,12 +130,12 @@ class NotePadController extends Controller
     }
 
     /**
-     * Copy a exist notepad. if still use default title, introduce a rule change it.
+     * Copy an exist notepad. if still use default title, introduce a rule change it.
      *
-     * @Param request Request must contains two things:
+     * @Param $request request contains two things:
      * 1. Detail of note, such as primary key, title, content.
      * 2. List of tag primary key.
-     * @Param noteId note primary key.
+     * @Param $noteId note primary key.
      *
      * @Return Whether the copy operation was successful.
      */

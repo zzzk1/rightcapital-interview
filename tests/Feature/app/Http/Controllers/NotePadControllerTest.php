@@ -16,7 +16,7 @@ class NotePadControllerTest extends TestCase
     /**
      * This method test  notepad getDetail function.
      */
-    public function testgetDetail(): void
+    public function testGetDetail(): void
     {
         // create fake data.
         $note = Note::factory()->create();
@@ -146,7 +146,7 @@ class NotePadControllerTest extends TestCase
 
         $requestCopyNote = [
             'title' => $note->title,
-            'contnet' => $note->content,
+            'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
             'tagIds'=> $tagList->pluck('id')->toArray()
@@ -168,7 +168,7 @@ class NotePadControllerTest extends TestCase
 
         $requestCopyNote = [
             'title' => $note->title,
-            'contnet' => $note->content,
+            'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
             'tagIds'=> $tagList->pluck('id')->toArray()
@@ -190,7 +190,7 @@ class NotePadControllerTest extends TestCase
 
         $requestCopyNote = [
             'title' => $note->title,
-            'contnet' => $note->content,
+            'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
             'tagIds'=> $tagList->pluck('id')->toArray()
@@ -212,7 +212,7 @@ class NotePadControllerTest extends TestCase
 
         $requestCopyNote = [
             'title' => $note->title,
-            'contnet' => $note->content,
+            'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
             'tagIds'=> $tagList->pluck('id')->toArray()
