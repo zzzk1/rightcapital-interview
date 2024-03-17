@@ -99,19 +99,21 @@ class NotePadControllerTest extends TestCase
     public function testCreate(): void
     {
         // create fake data without tag.
-        $requestCreateNote = [
+        $createNoteRequestData = [
             'title' => 'create title',
             'content' => 'create content',
             'copy_times' => 0,
             'origin_mark' => true
         ];
         // sent request
-        $resp = $this->post('/notepad/', $requestCreateNote);
+        $resp = $this->post('/notepad/', $createNoteRequestData);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
-            'title' => $requestCreateNote['title'],
-            'content' => $requestCreateNote['content']
+            'title' => $createNoteRequestData['title'],
+            'content' => $createNoteRequestData['content'],
+            'copy_times' => $createNoteRequestData['copy_times'],
+            'origin_mark' => $createNoteRequestData['origin_mark'],
         ]);
     }
 
@@ -139,6 +141,7 @@ class NotePadControllerTest extends TestCase
         $tagList = Tag::factory()->count(5)->create();
         $note->tags()->attach($tagList);
 
+        //----------------------------test----------------------------
         $note->title = "hello";
         $note->copy_times = 0;
         $note->origin_mark = true;
@@ -161,7 +164,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
         ]);
 
-        /**************************************************************************************/
+        //----------------------------test----------------------------
         $note->title = "hello";
         $note->copy_times = 1;
         $note->save();
@@ -183,7 +186,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
         ]);
 
-        /**************************************************************************************/
+        //----------------------------test----------------------------
         $note->title = "hello";
         $note->copy_times = 99;
         $note->save();
@@ -205,7 +208,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
         ]);
 
-        /**************************************************************************************/
+        //----------------------------test----------------------------
         $note->title = "hello";
         $note->copy_times = 298;
         $note->save();
