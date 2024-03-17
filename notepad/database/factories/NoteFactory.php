@@ -23,6 +23,8 @@ class NoteFactory extends Factory
         return [
             'title' => fake()->word(),
             'content' => fake()->text(),
+            'copy_times' => fake()->numberBetween(0, 399),
+            'origin_mark' => true
         ];
     }
 }

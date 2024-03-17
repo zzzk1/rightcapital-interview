@@ -17,6 +17,8 @@ class Note extends Model
     protected $fillable = [
         'title', 
         'content',
+        'copy_times',
+        'origin_mark'
     ];
     
     use HasFactory;

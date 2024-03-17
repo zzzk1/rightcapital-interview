@@ -42,6 +42,8 @@ class NotePadControllerTest extends TestCase
         $UpdatedData = [
             'title' => 'update title',
             'content' => 'update content',
+            'copy_times' => 0,
+            'origin_mark' => true,
             'tagIds' => $updatedTagList->pluck('id')->toArray()
         ];
 
@@ -100,6 +102,8 @@ class NotePadControllerTest extends TestCase
         $requestCreateNote = [
             'title' => 'create title',
             'content' => 'create content',
+            'copy_times' => 0,
+            'origin_mark' => true
         ];
         // sent request
         $resp = $this->post('/notepad/', $requestCreateNote);
@@ -110,5 +114,4 @@ class NotePadControllerTest extends TestCase
             'content' => $requestCreateNote['content']
         ]);
     }
-
 }

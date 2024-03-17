@@ -10,6 +10,7 @@ use App\Models\NoteTag;
 use App\Http\Requests\UpdateNotePadRequest;
 use App\Http\Requests\CreateNotePadRequest;
 
+
 class NotePadController extends Controller
 {
     /**
@@ -22,7 +23,7 @@ class NotePadController extends Controller
     {
         $note = Note::findOrFail($noteId);
         $tagList = $note->tags;
-   
+
         $data = [
             'note' => $note,
             'tags' => $tagList
@@ -45,6 +46,8 @@ class NotePadController extends Controller
         $note = Note::findOrFail($noteId);
         $note->title = $request->title;
         $note->content = $request->content;
+        $note->copy_times = $request->copy_times;
+        $note->origin_mark = $request->origin_mark;
         $note->save();
 
         // delete all old relationship.
@@ -60,7 +63,7 @@ class NotePadController extends Controller
                 'tag_id' => $tagId
             ]);
         }
-        
+
         $tagList = $note->tags;
 
         $data = [
@@ -81,7 +84,7 @@ class NotePadController extends Controller
     {
         // First unbind relationship logical.
         NoteTag::where('note_id', $noteId)->delete();
-        
+
         // Delete note logical.
         $note = Note::find($noteId);
         $note->delete();
@@ -94,7 +97,8 @@ class NotePadController extends Controller
      * 
      * @Param CreateNotePadRequest
      */
-    public function create(CreateNotePadRequest $request) {
+    public function create(CreateNotePadRequest $request)
+    {
         // search before save.
         $existNote = Note::where('title', $request->title)->first();
 
@@ -103,9 +107,13 @@ class NotePadController extends Controller
             return response()->json([]);
         }
 
-        $note = new Note($request->all());
-
+        $note = new Note();
+        $note->title = $request->title;
+        $note->content = $request->content;
+        $note->copy_times = $request->copy_times;
+        $note->origin_mark = $request->origin_mark;
         $note->save();
+
         return response()->json([]);
     }
 }
