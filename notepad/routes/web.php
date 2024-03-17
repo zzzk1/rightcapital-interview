@@ -18,21 +18,26 @@ Route::get('/', function () {
 });
 
 /**
- * Get notepad detail info. 
+ * Get notepad detail info.
  */
 Route::get('/notepad/{noteId}', [NotePadController::class, 'getDetail']);
 
 /**
- * Update notepad info. 
+ * Update notepad info.
  */
 Route::post('/notepad/{noteId}', [NotePadController::class, 'update']);
 
 /**
- * Delete notepad logical. 
+ * Delete notepad logical.
  */
 Route::delete('/notepad/{noteId}', [NotePadController::class, 'delete']);
 
 /**
- * Create notepad info. 
+ * Create notepad info.
  */
 Route::post('/notepad/', [NotePadController::class, 'create']);
+
+/**
+ * copy a notepad.
+ */
+Route::post('/copy/{noteId}', [NotePadController::class, 'copy']);
