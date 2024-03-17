@@ -115,6 +115,24 @@ class NotePadControllerTest extends TestCase
         ]);
     }
 
+    public function testRestore()
+    {
+        $note = Note::factory()->create();
+        $tagList = Tag::factory()->count(5)->create();
+        $note->tags()->attach($tagList);
+
+        $note->delete();
+        self::assertTrue($note->trashed());
+
+        $resp = $this->post('/restore/' . $note->id);
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => $note->title,
+            'content' => $note->content,
+        ]);
+    }
+
     public function testCopyWithOriginNotePad(): void
     {
         $note = Note::factory()->create();

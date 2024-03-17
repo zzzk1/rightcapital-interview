@@ -120,6 +120,19 @@ class NotePadController extends Controller
     }
 
     /**
+     * restore a deleted note.
+     *
+     * @param noteId note primary key.
+     * @return Whether the copy operation was successful.
+     */
+    public function restore($noteId)
+    {
+        $note = Note::onlyTrashed()->find($noteId);
+        $note->restore();
+        return response()->json([]);
+    }
+
+    /**
      * Copy a exist notepad. if still use default title, introduce a rule change it.
      *
      * @Param request Request must contains two things:
@@ -129,7 +142,6 @@ class NotePadController extends Controller
      *
      * @Return Whether the copy operation was successful.
      */
-
     public function copy(request $request, $noteId)
     {
         $metaNote = Note::find($noteId);

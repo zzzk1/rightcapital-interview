@@ -41,3 +41,8 @@ Route::post('/notepad/', [NotePadController::class, 'create']);
  * copy a notepad.
  */
 Route::post('/copy/{noteId}', [NotePadController::class, 'copy']);
+
+/**
+ * restore a notepad.
+ */
+Route::post('/restore/{noteId}', [NotePadController::class, 'restore']);
