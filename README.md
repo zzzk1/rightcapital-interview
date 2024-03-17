@@ -16,7 +16,7 @@
      - 如果被复制的记录标题是 "Title(99)", 复制后的记录标题是 "Title(99)(1)" 
      - 如果被复制的记录标题是 "Title(99)(99)", 复制后的记录标题是 "Title(99)(99)(1)" , 以此类推
 - ⭕ 单元测试 & 集成测试
-- ⭕ GitHub action CI
+- ✅(03/17) GitHub action CI
 
 ## API Desgin  
 
