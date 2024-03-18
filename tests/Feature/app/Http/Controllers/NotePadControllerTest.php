@@ -2,139 +2,183 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-use Tests\TestCase;
-
 use App\Models\Note;
 use App\Models\Tag;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class NotePadControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
-     * This method test  notepad getDetail function.
+     * Test getting all notePads.
      */
-    public function testGetDetail(): void
+    public function testIndex()
     {
-        // create fake data.
-        $note = Note::factory()->create();
-        $tagList = Tag::factory()->count(5)->create();
-        $note->tags()->attach($tagList);
+        $noteList = Note::factory()->count(5);
+        $tagList = Tag::factory()->count(2);
 
-        // sent request.
-        $resp = $this->get('/notepad/' . $note->id);
-        $resp->assertStatus(200);
+        foreach ($noteList as $note) {
+            $note->tags()->attach($tagList);
+        }
+
+        $response = $this->get(route('notepad.index'));
+        $response->assertStatus(200);
+
+        foreach ($noteList as $note) {
+            $response->assertJsonFragment([
+                'id' => $note->id,
+                'title' => $note->title,
+                'content' => $note->content,
+                'copy_times' => $note->copy_times,
+                'origin_mark' => $note->origin_mark,
+                'tags' => $note->tags->toArray()
+            ]);
+        }
     }
 
     /**
-     * This method test update function.
+     * Test storing a new notePad.
      */
-    public function testUpdate(): void
+    public function testStore()
     {
-        // create fake data.
-        $note = Note::factory()->create();
         $tagList = Tag::factory()->count(5)->create();
-        $note->tags()->attach($tagList);
 
-        $updatedTagList = Tag::factory()->count(5)->create();
-        $UpdatedData = [
-            'title' => 'update title',
-            'content' => 'update content',
-            'copy_times' => 0,
+        //request contains note, list of tag primary id
+        $requestData = [
+            'title' => 'title',
+            'content' => 'content',
+            'copy_times' => '1',
             'origin_mark' => true,
-            'tagIds' => $updatedTagList->pluck('id')->toArray()
+            'tagIdList' => $tagList->pluck('id')->toArray()
         ];
 
-        // sent request.
-        $resp = $this->post('/notepad/' . $note->id, $UpdatedData);
-        $resp->assertStatus(200);
+        $response = $this->postJson(route('notepad.store'), $requestData);
+        $response->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
-            'id' => $note->id,
-            'title' => 'update title',
-            'content' => 'update content'
+            'title' => $requestData['title'],
+            'content' => $requestData['content'],
+            'copy_times' => $requestData['copy_times'],
+            'origin_mark' => $requestData['origin_mark'],
         ]);
 
-        foreach ($tagList as $tag) {
+        // assert relationship
+        $note = Note::where('title', $requestData['title'])->first();
+        foreach ($requestData['tagIdList'] as $tagId) {
             $this->assertDatabaseHas('notes_tags', [
                 'note_id' => $note->id,
-                'tag_id' => $tag->id
+                'tag_id' => $tagId
             ]);
         }
     }
 
     /**
-     * This method test update function.
+     * Test getting a notePad.
      */
-    public function testDelete(): void
+    public function testShow()
     {
-        // create fake data.
-        $note = Note::factory()->create();
-        $tagList = Tag::factory()->count(5)->create();
-        $note->tags()->attach($tagList);
+        $notePad = Note::factory()->create();
 
-        // sent request
-        $resp = $this->delete('/notepad/' . $note->id);
-        $resp->assertStatus(200);
+        $response = $this->getJson(route('notepad.show', ['id' => $notePad->id]));
+        $response->assertStatus(200);
 
-        $this->assertDatabaseHas('notes', [
-            'id' => $note->id,
-            'title' => $note->title,
-            'content' => $note->content
+        $response->assertJson([
+            'id' => $notePad->id,
+            'title' => $notePad->title,
+            'content' => $notePad->content,
+            'copy_times' => $notePad->copy_times,
+            'origin_mark' => $notePad->origin_mark,
         ]);
-
-        foreach ($tagList as $tag) {
-            $this->assertDatabaseHas('notes_tags', [
-                'note_id' => $note->id,
-                'tag_id' => $tag->id
-            ]);
-        }
     }
 
     /**
-     * This method test create function.
+     * Test getting a notePad.
      */
-    public function testCreate(): void
-    {
-        // create fake data without tag.
-        $createNoteRequestData = [
-            'title' => 'create title',
-            'content' => 'create content',
-            'copy_times' => 0,
-            'origin_mark' => true
-        ];
-        // sent request
-        $resp = $this->post('/notepad/', $createNoteRequestData);
-        $resp->assertStatus(200);
-
-        $this->assertDatabaseHas('notes', [
-            'title' => $createNoteRequestData['title'],
-            'content' => $createNoteRequestData['content'],
-            'copy_times' => $createNoteRequestData['copy_times'],
-            'origin_mark' => $createNoteRequestData['origin_mark'],
-        ]);
-    }
-
-    public function testRestore()
+    public function testEdit()
     {
         $note = Note::factory()->create();
-        $tagList = Tag::factory()->count(5)->create();
-        $note->tags()->attach($tagList);
 
-        $note->delete();
-        self::assertTrue($note->trashed());
+        $response = $this->get(route('notepad.edit', ['id' => $note->id]));
+        $response->assertStatus(200);
 
-        $resp = $this->post('/restore/' . $note->id);
-        $resp->assertStatus(200);
-
-        $this->assertDatabaseHas('notes', [
+        $response->assertJson([
+            'id' => $note->id,
             'title' => $note->title,
             'content' => $note->content,
+            'copy_times' => $note->copy_times
         ]);
     }
 
+    /**
+     * Test updating a notePad.
+     */
+    public function testUpdate()
+    {
+        $notePad = Note::factory()->create();
+
+        $tagList= Tag::factory()->count(5)->create();
+        $tagIdList = $tagList->pluck('id')->toArray();
+        $notePad->tags()->attach($tagIdList);
+
+        $updatedData = [
+            'title' => 'title',
+            'content' => 'content',
+            'copy_times' => 1,
+            'origin_mark' => true,
+            'tagIdList' => $tagIdList
+        ];
+
+        $response = $this->putJson(route('notepad.update', ['id' => $notePad->id]), $updatedData);
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'id' => $notePad->id,
+            'title' => $updatedData['title'],
+            'content' => $updatedData['content'],
+            'copy_times' => $updatedData['copy_times'],
+            'origin_mark' => $updatedData['origin_mark'],
+        ]);
+
+        foreach ($updatedData['tagIdList'] as $tagId) {
+            $this->assertDatabaseHas('notes_tags', [
+                'note_id' => $notePad->id,
+                'tag_id' => $tagId
+            ]);
+        }
+    }
+
+    /**
+     * Test soft deleting a notePad.
+     */
+    public function testDestroy()
+    {
+        $notePad = Note::factory()->create();
+
+        $response = $this->deleteJson(route('notepad.destroy', ['id' => $notePad->id]));
+        $response->assertStatus(200);
+
+        $this->assertSoftDeleted('notes', ['id' => $notePad->id]);
+    }
+
+    /**
+     * Test restore a notePad.
+     */
+    public function testRestore()
+    {
+        $notePad = Note::factory()->create();
+        $notePad->delete();
+
+        $response = $this->putJson(route('notepad.restore', ['id' => $notePad->id]));
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', ['id' => $notePad->id]);
+    }
+
+    /**
+     * Test copy an origin notePad.
+     */
     public function testCopyWithOriginNotePad(): void
     {
         $note = Note::factory()->create();
@@ -156,7 +200,8 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post('/copy/' . $note->id, $requestCopyNote);
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -178,7 +223,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post('/copy/' . $note->id, $requestCopyNote);
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -200,7 +245,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post('/copy/' . $note->id, $requestCopyNote);
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -222,7 +267,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post('/copy/' . $note->id, $requestCopyNote);
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [

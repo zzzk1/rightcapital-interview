@@ -2,202 +2,209 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Note;
-use App\Models\NoteTag;
+use App\Models\Tag;
 
-use App\Http\Requests\UpdateNotePadRequest;
-use App\Http\Requests\CreateNotePadRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 define("LIMIT", 99);
+
 class NotePadController extends Controller
 {
-
     /**
-     * This method return a notepad, the notepad contains note title, note context and many tags.
+     * Display a listing of the resource.
      *
-     * @Param $noteId: Table note primary key.
-     * @Return Json data.
+     * @return JsonResponse list of notePad.
      */
-    public function getDetail(string $noteId)
+    public function index(): JsonResponse
     {
-        $note = Note::findOrFail($noteId);
-        $tagList = $note->tags;
+        $notePads = Note::with('tags')->get();
 
-        $data = [
-            'note' => $note,
-            'tags' => $tagList
-        ];
-
-        return response()->json($data);
+        return response()->json($notePads);
     }
 
     /**
-     * This method use to update a notepad by note id, the notepad contains note title, note context and many tags.
-     * We choose delete old bind relationship first, then bind new relationship.
-     *
-     * @Param UpdateNotePadRequest $request This request carries Note and list of Tags belonging to it.
-     * @Param $noteId: Table note primary key.
-     * @Return Whether the update operation was successful.
+     * Show the form for creating a new resource.
      */
-    public function update(UpdateNotePadRequest $request, $noteId)
+    public function create()
     {
-        // Fisrt update note's title and content.
-        $note = Note::findOrFail($noteId);
-        $note->title = $request->title;
-        $note->content = $request->content;
-        $note->copy_times = $request->copy_times;
-        $note->origin_mark = $request->origin_mark;
-        $note->save();
-
-        // delete all old relationship.
-        NoteTag::where('note_id', $noteId)->delete();
-
-        // bind new relationship.
-        $tagIdList = $request->tagIds;
-
-        // TODO: This operation may not perform well
-        foreach ($tagIdList as $tagId) {
-            NoteTag::create([
-                'note_id' => $noteId,
-                'tag_id' => $tagId
-            ]);
-        }
-
-        $tagList = $note->tags;
-
-        $data = [
-            'note' => $note,
-            'tags' => $tagList
-        ];
-
-        return response()->json($data);
+        //
     }
 
     /**
-     * This method can be used to delete any notepad of our choice.
+     * Store a newly created resource in storage.
      *
-     * @Param $noteId: Table note primary key.
+     * @Param Request $request
+     * @return JsonResponse Json data contains notePad.
      */
-    public function delete($noteId)
-    {
-        // First unbind relationship logical.
-        NoteTag::where('note_id', $noteId)->delete();
-
-        // Delete note logical.
-        $note = Note::find($noteId);
-        $note->delete();
-
-        return response()->json([]);
-    }
-
-    /**
-     * Create a new notepad must contains title, content. tag can be empty.
-     *
-     * @Param $request:
-     */
-    public function create(CreateNotePadRequest $request)
+    public function store(Request $request): JsonResponse
     {
         // search before save.
         $existNote = Note::where('title', $request->title)->first();
 
         // create failed target already exist.
         if ($existNote != null) {
-            return response()->json([]);
+            return response()->json();
         }
 
-        $note = new Note();
-        $note->title = $request->title;
-        $note->content = $request->content;
-        $note->copy_times = $request->copy_times;
-        $note->origin_mark = $request->origin_mark;
-        $note->save();
+        $notePad = Note::create($request->all());
 
+        if ($request->tagIdList != null) {
+            // get tags for request data
+            $tagList = Tag::whereIn('id', $request->tagIdList)->get();
+
+            // if request contains tag primary key, bind note, tag relationship
+            if ($tagList->isNotEmpty()) {
+                $notePad->tags()->attach($tagList);
+            }
+
+            return response()->json($notePad);
+        }
+        return response()->json();
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param string $id table note primary key.
+     * @return JsonResponse Json data contains notePad.
+     */
+    public function show(string $id): JsonResponse
+    {
+        $notePad = Note::findOrFail($id);
+        return response()->json($notePad);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param string $id table note primary key.
+     * @return JsonResponse Json data contains notePad.
+     */
+    public function edit(string $id): JsonResponse
+    {
+        $notePad = Note::findOrFail($id);
+        return response()->json($notePad);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @Param Request $request
+     * @param string $id table note primary key.
+     * @return JsonResponse Json data contains notePad.
+     */
+    public function update(Request $request, string $id): JsonResponse
+    {
+        // first update note's title and content.
+        $notePad = Note::findOrFail($id);
+        $notePad->fill($request->all());
+
+        // delete old relationship before update
+        $notePad->tags()->detach();
+        $notePad->tags()->attach($request->tagIdList);
+        $notePad->save();
+
+        return response()->json($notePad);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param string $id table note primary key.
+     * @return JsonResponse
+     */
+    public function destroy(string $id): JsonResponse
+    {
+        $notePad = Note::findOrFail($id);
+        $notePad->delete();
         return response()->json([]);
     }
 
     /**
-     * restore a deleted note.
+     * Restore the deleted note.
      *
-     * @param $noteId note primary key.
-     * @return Whether the copy operation was successful.
+     * @param string $id table note primary key.
+     * @return JsonResponse Json data contains notePad.
      */
-    public function restore($noteId)
+    public function restore(string $id): JsonResponse
     {
-        $note = Note::onlyTrashed()->find($noteId);
-        $note->restore();
-        return response()->json([]);
+        $notePad = Note::onlyTrashed()->find($id);
+        $notePad->restore();
+        return response()->json($notePad);
     }
 
     /**
-     * Copy an exist notepad. if still use default title, introduce a rule change it.
+     * Clone an exist notePad.
      *
-     * @Param $request request contains two things:
-     * 1. Detail of note, such as primary key, title, content.
-     * 2. List of tag primary key.
-     * @Param $noteId note primary key.
-     *
-     * @Return Whether the copy operation was successful.
+     * @Param request $request request contains note data, a list of tags.
+     * @param string $id table note primary key.
+     * @return JsonResponse Json data contains notePad.
      */
-    public function copy(request $request, $noteId)
+    public function copy(request $request, string $id): JsonResponse
     {
-        $metaNote = Note::find($noteId);
+        $metaNote = Note::find($id);
 
         /**
          * What is copied is a piece of metadata.Create a suffix by the number of times it is copied.
          *
-         * DEFINE 'title' : table note's filed `title` matedata.
+         * DEFINE 'title' : table note's filed `title` metadata.
          *
          * eg:
          * 'title' = "this is a title"
          * 'title'(1) =  "this is a title"(1)
          *
-         * ----------- copy_times = 0 ----------------------------
+         * ------------------ copy_times = 0 --------------------
          * new title ----> 'title'(copy_times + 1)
          * new title is "this is a title"(1)
-         * -------------------------------------------------------
+         * ------------------------------------------------------
          *
-         * ----------- copy_times = 1 ----------------------------
+         * ------------------ copy_times = 1 --------------------
          * new title ----> 'title'(copy_times + 1)
          * new title is "this is a title(2)"
-         * -------------------------------------------------------
+         * ------------------------------------------------------
          *
-         * ----------- copy_times = 98 ---------------------------
+         * ------------------ copy_times = 98 -------------------
          * new title ----> 'title'(copy_times + 1)
          * new title is "this is a title(99)"
-         * -------------------------------------------------------
+         * ------------------------------------------------------
          *
-         * ----------- copy_times = 99 ---------------------------
+         * ------------------ copy_times = 99 -------------------
          * new title ----> 'title'(copy_times + 1)
-         * casue copy_times + 1 > 99(default limit 99)
+         * copy_times + 1 > 99(default limit 99)
+         *
          * new title ----> 'title'(99)((copy_times + 1) % 99)
          * new title is "this is a title(99)(1)"
-         * --------------------------------------------------------
+         * ------------------------------------------------------
          *
-         * ----------- copy_times = 100 ---------------------------
+         * ------------------ copy_times = 100 ------------------
          * new title ----> 'title'(copy_times + 1)
-         * casue copy_times + 1 > 99(default limit 99)
+         * copy_times + 1 > 99(default limit 99)
+         *
          * new title ----> 'title'(99)((copy_times + 1) % 99)
          * new title is "this is a title(99)(2)"
-         * --------------------------------------------------------
+         * ------------------------------------------------------
          *
-         * ----------- copy_times = 198 ---------------------------
+         * ------------------ copy_times = 198 ------------------
          * new title ----> 'title'(copy_times + 1)
-         * casue copy_times + 1 > 99(default limit 99)
+         * copy_times + 1 > 99(default limit 99)
          *
          * ((copy_times + 1) / 99) = 2(TWO)
+         *
          * we should add TWO (99) in new title
          * new title is "this is a title(99)(99)(1)"
-         * --------------------------------------------------------
+         * ------------------------------------------------------
          *
-         * ----------- copy_times = 298 ---------------------------
+         * ------------------ copy_times = 298 ------------------
          * new title ----> 'title'(copy_times + 1)
-         * casue copy_times + 1 > 99(default limit 99)
+         * copy_times + 1 > 99(default limit 99)
          *
          * ((copy_times + 1) / 99) = 3(THREE)
+         *
          * we should add THREE (99) in new title
          * new title is "this is a title(99)(99)(99)(2)"
-         * --------------------------------------------------------
+         * -----------------------------------------------------
          */
         if ($metaNote->origin_mark) {
             $clonedNote = new Note();
@@ -208,27 +215,14 @@ class NotePadController extends Controller
             $clonedNote->save();
 
             // bind new relationship.
-            $tagIdList = $request->tagIds;
+            $tagIdList = $request->tagIdList;
+            $clonedNote->tags()->attach($tagIdList);
 
-            // TODO: This operation may not perform well
-            foreach ($tagIdList as $tagId) {
-                NoteTag::create([
-                    'note_id' => $clonedNote->id,
-                    'tag_id' => $tagId
-                ]);
-            }
-
-            $tagList = $clonedNote->tags;
-
-            $data = [
-                'note' => $clonedNote,
-                'tags' => $tagList
-            ];
-
-            return $data;
+            return response()->json($clonedNote);
         }
 
         //TODO what if title like "title(1)" ?
+        return response()->json();
     }
 
     private function incrementTitleSuffix($metaNote): string
