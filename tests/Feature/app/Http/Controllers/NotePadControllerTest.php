@@ -85,11 +85,17 @@ class NotePadControllerTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertJson([
-            'id' => $notePad->id,
-            'title' => $notePad->title,
-            'content' => $notePad->content,
-            'copy_times' => $notePad->copy_times,
-            'origin_mark' => $notePad->origin_mark,
+            'message' => 'get successful',
+            'data' => [
+                'id' => $notePad->id,
+                'title' => $notePad->title,
+                'content' => $notePad->content,
+                'created_at' => $notePad->created_at->toISOString(),
+                'updated_at' => $notePad->updated_at->toISOString(),
+                'deleted_at' => $notePad->deleted_at ? $notePad->deleted_at->toISOString() : null,
+                'copy_times' => $notePad->copy_times,
+                'origin_mark' => $notePad->origin_mark,
+            ],
         ]);
     }
 
@@ -98,16 +104,23 @@ class NotePadControllerTest extends TestCase
      */
     public function testEdit()
     {
-        $note = Note::factory()->create();
+        $notePad = Note::factory()->create();
 
-        $response = $this->get(route('notepad.edit', ['id' => $note->id]));
+        $response = $this->get(route('notepad.edit', ['id' => $notePad->id]));
         $response->assertStatus(200);
 
         $response->assertJson([
-            'id' => $note->id,
-            'title' => $note->title,
-            'content' => $note->content,
-            'copy_times' => $note->copy_times
+            'message' => 'edit successful',
+            'data' => [
+                'id' => $notePad->id,
+                'title' => $notePad->title,
+                'content' => $notePad->content,
+                'created_at' => $notePad->created_at->toISOString(),
+                'updated_at' => $notePad->updated_at->toISOString(),
+                'deleted_at' => $notePad->deleted_at ? $notePad->deleted_at->toISOString() : null,
+                'copy_times' => $notePad->copy_times,
+                'origin_mark' => $notePad->origin_mark,
+            ],
         ]);
     }
 
@@ -118,7 +131,7 @@ class NotePadControllerTest extends TestCase
     {
         $notePad = Note::factory()->create();
 
-        $tagList= Tag::factory()->count(5)->create();
+        $tagList = Tag::factory()->count(5)->create();
         $tagIdList = $tagList->pluck('id')->toArray();
         $notePad->tags()->attach($tagIdList);
 
@@ -196,7 +209,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
-            'tagIds'=> $tagList->pluck('id')->toArray()
+            'tagIds' => $tagList->pluck('id')->toArray()
         ];
 
         //sent request
@@ -219,7 +232,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
-            'tagIds'=> $tagList->pluck('id')->toArray()
+            'tagIds' => $tagList->pluck('id')->toArray()
         ];
 
         //sent request
@@ -241,7 +254,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
-            'tagIds'=> $tagList->pluck('id')->toArray()
+            'tagIds' => $tagList->pluck('id')->toArray()
         ];
 
         //sent request
@@ -263,7 +276,7 @@ class NotePadControllerTest extends TestCase
             'content' => $note->content,
             'copy_times' => $note->copy_times,
             'origin_mark' => $note->origin_mark,
-            'tagIds'=> $tagList->pluck('id')->toArray()
+            'tagIds' => $tagList->pluck('id')->toArray()
         ];
 
         //sent request

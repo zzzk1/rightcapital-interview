@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 use App\Services\NotePadService;
+use App\Utils\ApiResult;
 
 class NotePadController extends Controller
 {
@@ -25,7 +26,7 @@ class NotePadController extends Controller
     {
         $notePads = $this->notePadService->listAll();
 
-        return response()->json($notePads);
+        return ApiResult::success("list successful", $notePads);
     }
 
     /**
@@ -44,9 +45,9 @@ class NotePadController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $notePads = $this->notePadService->saveOne($request);
+        $saved = $this->notePadService->saveOne($request);
 
-        return response()->json($notePads);
+        return ApiResult::success("list successful", $saved);
     }
 
     /**
@@ -59,7 +60,7 @@ class NotePadController extends Controller
     {
         $notePad = $this->notePadService->getOne($id);
 
-        return response()->json($notePad);
+        return ApiResult::success("get successful", $notePad);
     }
 
     /**
@@ -72,7 +73,7 @@ class NotePadController extends Controller
     {
         $notePad = $this->notePadService->getOne($id);
 
-        return response()->json($notePad);
+        return ApiResult::success("edit successful", $notePad);
     }
 
     /**
@@ -84,9 +85,9 @@ class NotePadController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        $notePad = $this->notePadService->updateOne($request, $id);
+        $updated = $this->notePadService->updateOne($request, $id);
 
-        return response()->json($notePad);
+        return ApiResult::success("updated successful", $updated);
     }
 
     /**
@@ -98,7 +99,7 @@ class NotePadController extends Controller
     public function destroy(string $id): JsonResponse
     {
         $removed = $this->notePadService->removeOne($id);
-        return response()->json($removed);
+        return ApiResult::success("removed successful", $removed);
     }
 
     /**
@@ -110,7 +111,7 @@ class NotePadController extends Controller
     public function restore(string $id): JsonResponse
     {
         $restored = $this->notePadService->restoreOne($id);
-        return response()->json($restored);
+        return ApiResult::success("restored successful", $restored);
     }
 
     /**
@@ -123,6 +124,6 @@ class NotePadController extends Controller
     public function copy(request $request, string $id): JsonResponse
     {
         $copied = $this->notePadService->copyOne($request, $id);
-        return response()->json($copied);
+        return ApiResult::success("copied successful", $copied);
     }
 }
