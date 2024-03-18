@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\NoteController;
 use App\Http\Controllers\TagController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotePadController;
+
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -56,4 +59,14 @@ Route::prefix('tags')->group(function () {
     Route::get('/{id}/edit', [TagController::class, 'edit'])->name('tags.edit');
     Route::put('/{id}', [TagController::class, 'update'])->name('tags.update');
     Route::delete('/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
+});
+
+Route::prefix('notes')->group(function () {
+    Route::get('/', [NoteController::class, 'index'])->name('notes.index');
+    Route::get('/create', [NoteController::class, 'create'])->name('notes.create');
+    Route::post('/', [NoteController::class, 'store'])->name('notes.store');
+    Route::get('/{id}', [NoteController::class, 'show'])->name('notes.show');
+    Route::get('/{id}/edit', [NoteController::class, 'edit'])->name('notes.edit');
+    Route::put('/{id}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('/{id}', [NoteController::class, 'destroy'])->name('notes.destroy');
 });
