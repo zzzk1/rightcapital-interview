@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Note;
-use App\Models\Tag;
-
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-define("LIMIT", 99);
+use App\Services\NotePadService;
 
 class NotePadController extends Controller
 {
+    protected $notePadService;
+
+    public function __construct(NotePadService $notePadService)
+    {
+        $this->notePadService = $notePadService;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -19,7 +23,7 @@ class NotePadController extends Controller
      */
     public function index(): JsonResponse
     {
-        $notePads = Note::with('tags')->get();
+        $notePads = $this->notePadService->listAll();
 
         return response()->json($notePads);
     }
@@ -40,28 +44,9 @@ class NotePadController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // search before save.
-        $existNote = Note::where('title', $request->title)->first();
+        $notePads = $this->notePadService->saveOne($request);
 
-        // create failed target already exist.
-        if ($existNote != null) {
-            return response()->json();
-        }
-
-        $notePad = Note::create($request->all());
-
-        if ($request->tagIdList != null) {
-            // get tags for request data
-            $tagList = Tag::whereIn('id', $request->tagIdList)->get();
-
-            // if request contains tag primary key, bind note, tag relationship
-            if ($tagList->isNotEmpty()) {
-                $notePad->tags()->attach($tagList);
-            }
-
-            return response()->json($notePad);
-        }
-        return response()->json();
+        return response()->json($notePads);
     }
 
     /**
@@ -72,7 +57,8 @@ class NotePadController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $notePad = Note::findOrFail($id);
+        $notePad = $this->notePadService->getOne($id);
+
         return response()->json($notePad);
     }
 
@@ -84,7 +70,8 @@ class NotePadController extends Controller
      */
     public function edit(string $id): JsonResponse
     {
-        $notePad = Note::findOrFail($id);
+        $notePad = $this->notePadService->getOne($id);
+
         return response()->json($notePad);
     }
 
@@ -97,14 +84,7 @@ class NotePadController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
-        // first update note's title and content.
-        $notePad = Note::findOrFail($id);
-        $notePad->fill($request->all());
-
-        // delete old relationship before update
-        $notePad->tags()->detach();
-        $notePad->tags()->attach($request->tagIdList);
-        $notePad->save();
+        $notePad = $this->notePadService->updateOne($request, $id);
 
         return response()->json($notePad);
     }
@@ -117,9 +97,8 @@ class NotePadController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
-        $notePad = Note::findOrFail($id);
-        $notePad->delete();
-        return response()->json([]);
+        $removed = $this->notePadService->removeOne($id);
+        return response()->json($removed);
     }
 
     /**
@@ -130,9 +109,8 @@ class NotePadController extends Controller
      */
     public function restore(string $id): JsonResponse
     {
-        $notePad = Note::onlyTrashed()->find($id);
-        $notePad->restore();
-        return response()->json($notePad);
+        $restored = $this->notePadService->restoreOne($id);
+        return response()->json($restored);
     }
 
     /**
@@ -144,100 +122,7 @@ class NotePadController extends Controller
      */
     public function copy(request $request, string $id): JsonResponse
     {
-        $metaNote = Note::find($id);
-
-        /**
-         * What is copied is a piece of metadata.Create a suffix by the number of times it is copied.
-         *
-         * DEFINE 'title' : table note's filed `title` metadata.
-         *
-         * eg:
-         * 'title' = "this is a title"
-         * 'title'(1) =  "this is a title"(1)
-         *
-         * ------------------ copy_times = 0 --------------------
-         * new title ----> 'title'(copy_times + 1)
-         * new title is "this is a title"(1)
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 1 --------------------
-         * new title ----> 'title'(copy_times + 1)
-         * new title is "this is a title(2)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 98 -------------------
-         * new title ----> 'title'(copy_times + 1)
-         * new title is "this is a title(99)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 99 -------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * new title ----> 'title'(99)((copy_times + 1) % 99)
-         * new title is "this is a title(99)(1)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 100 ------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * new title ----> 'title'(99)((copy_times + 1) % 99)
-         * new title is "this is a title(99)(2)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 198 ------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * ((copy_times + 1) / 99) = 2(TWO)
-         *
-         * we should add TWO (99) in new title
-         * new title is "this is a title(99)(99)(1)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 298 ------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * ((copy_times + 1) / 99) = 3(THREE)
-         *
-         * we should add THREE (99) in new title
-         * new title is "this is a title(99)(99)(99)(2)"
-         * -----------------------------------------------------
-         */
-        if ($metaNote->origin_mark) {
-            $clonedNote = new Note();
-            $clonedNote->title = $this->incrementTitleSuffix($metaNote);
-            $clonedNote->content = $metaNote->content;
-            $clonedNote->copy_times = 0;
-            $clonedNote->origin_mark = false;
-            $clonedNote->save();
-
-            // bind new relationship.
-            $tagIdList = $request->tagIdList;
-            $clonedNote->tags()->attach($tagIdList);
-
-            return response()->json($clonedNote);
-        }
-
-        //TODO what if title like "title(1)" ?
-        return response()->json();
-    }
-
-    private function incrementTitleSuffix($metaNote): string
-    {
-        $newTitle = $metaNote->title;
-        // the total number of copies
-        $totalCopiedTimes = ($metaNote->copy_times + 1);
-
-        // add (LIMIT) suffix
-        for ($i = 0; $i < (int)($totalCopiedTimes / LIMIT); $i++) {
-            $newTitle = $newTitle . "(" . LIMIT . ")";
-        }
-
-        // add calculated suffix
-        $calculateNum = $totalCopiedTimes % LIMIT;
-        return $newTitle . "(" . $calculateNum . ")";
+        $copied = $this->notePadService->copyOne($request, $id);
+        return response()->json($copied);
     }
 }
