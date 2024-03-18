@@ -6,7 +6,7 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 
 define("LIMIT", 99);
-
+define("NOT_AVAILABLE_TITLE", "not available title");
 class NotePadService
 {
     /**
@@ -193,12 +193,70 @@ class NotePadService
 
             return $clonedNote;
         } else {
+
+            /**
+             * ------------------ title = "title(1)" --------------------
+             *
+             * ------------------ title = "title(98)" --------------------
+             *
+             * ------------------ title = "title(99)" --------------------
+             */
             //TODO what if title like "title(1)" ?
+
 
             return null;
         }
     }
 
+    private function generateUniqueTitle($metaNote)
+    {
+        $templateTitle = $metaNote->title;
+
+        /**
+         * Get last number in "(number)"
+         * eg: title(99)(99)(21) ---> 21
+         * $lastNumber will be 21
+         */
+        preg_match_all('/\((\d+)\)/', $templateTitle, $matches);
+        $numbers = $matches[1];
+        $lastNumber = end($numbers);
+
+        /**
+         * Remove last "(number)"
+         * eg: title(99)(99)(1) ---> title(99)(99)
+         * $templateTitle will be "title(99)(99)"
+         */
+        $lastBracketContent = '(' . $lastNumber . ')';
+        $templateTitle = preg_replace('/' . preg_quote($lastBracketContent, '/') . '$/', '', $templateTitle);
+
+        $clonedNote = null;
+        do {
+            /**
+             * In this for loop try to search a not existed record.
+             * Once we find it then means we find an available title.
+             */
+            for ( ;$lastNumber < LIMIT; ) {
+                $lastNumber += 1;
+                $tempCellTitle = $templateTitle . "(" . $lastNumber . ")";
+                $clonedNote = Note::withTrashed($tempCellTitle);
+
+                // We find it, now return the value.
+                if ($clonedNote == null) {
+                    return $tempCellTitle;
+                }
+            }
+
+            /**
+             * eg: "title(99)(99)(1~99)" not available, so update $templateTitle like "title(99)(99)(99)".
+             */
+            $templateTitle .= "(" . LIMIT . ")";
+
+            $lastNumber = 1;
+        } while($clonedNote != null);
+
+        return NOT_AVAILABLE_TITLE;
+    }
+    
     /**
      * Generate a new title by copying the notepad title.
      *
