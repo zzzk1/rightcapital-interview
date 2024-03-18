@@ -2,19 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tag;
-
+use App\Services\NoteService;
+use App\Services\TagService;
+use App\Utils\ApiResult;
 use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
+    protected $tagService;
+
+    public function __construct(TagService $tagService)
+    {
+        $this->tagService = $tagService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $tags = Tag::all();
-        return response()->json($tags);
+        $tagList = $this->tagService->listAll();
+        return ApiResult::success("list successful", $tagList);
     }
 
     /**
@@ -30,8 +38,8 @@ class TagController extends Controller
      */
     public function store(Request $request)
     {
-        Tag::create($request->all());
-        return redirect()->route('tags.index');
+        $stored = $this->tagService->storeOne($request);
+        return ApiResult::success("stored successful", $stored);
     }
 
     /**
@@ -39,8 +47,8 @@ class TagController extends Controller
      */
     public function show(string $id)
     {
-        $tag = Tag::findOrFail($id);
-        return response()->json($tag);
+        $tag = $this->tagService->getOne($id);
+        return ApiResult::success("get successful", $tag);
     }
 
     /**
@@ -48,8 +56,8 @@ class TagController extends Controller
      */
     public function edit(string $id)
     {
-        $tag = Tag::findOrFail($id);
-        return response()->json($tag);
+        $tag = $this->tagService->getOne($id);
+        return ApiResult::success("edited successful", $tag);
     }
 
     /**
@@ -57,10 +65,8 @@ class TagController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $tag = Tag::findOrFail($id);
-        $tag->fill($request->all());
-        $tag->save();
-        return response()->json($tag);
+        $updated = $this->tagService->updateOne($request, $id);
+        return ApiResult::success("updated successful", $updated);
     }
 
     /**
@@ -68,8 +74,7 @@ class TagController extends Controller
      */
     public function destroy(string $id)
     {
-        $tag = Tag::findOrFail($id);
-        $tag->delete();
-        return response()->json();
+        $removed = $this->tagService->removedOne($id);
+        return ApiResult::success("removed successful", $removed);
     }
 }

@@ -24,7 +24,10 @@ class TagControllerTest extends TestCase
         foreach ($tagList as $tag) {
             $response->assertJsonFragment([
                 'id' => $tag->id,
-                'name' => $tag->name
+                'name' => $tag->name,
+                'created_at' => $tag->created_at,
+                'updated_at' => $tag->updated_at,
+                'deleted_at' => $tag->deleted_at
             ]);
         }
     }
@@ -39,7 +42,7 @@ class TagControllerTest extends TestCase
         ];
 
         $response = $this->post(route('tags.store'), $storeTagRequest);
-        $response->assertStatus(302);
+        $response->assertStatus(200);
 
         // Check if exists in the database
         $this->assertDatabaseHas('tags', $storeTagRequest);
@@ -56,9 +59,15 @@ class TagControllerTest extends TestCase
         $response->assertStatus(200);
 
         // Check if the data exists in the response
-        $response->assertJson([
-            'id' => $tag->id,
-            'name' => $tag->name,
+        $response->assertJsonFragment([
+            'message' => 'get successful',
+            'data' => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'created_at' => $tag->created_at,
+                'updated_at' => $tag->updated_at,
+                'deleted_at' => $tag->deleted_at
+            ]
         ]);
     }
 
@@ -73,9 +82,15 @@ class TagControllerTest extends TestCase
         $response->assertStatus(200);
 
         // Check if the data exists in the response
-        $response->assertJson([
-            'id' => $tag->id,
-            'name' => $tag->name,
+        $response->assertJsonFragment([
+            'message' => 'edited successful',
+            'data' => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'created_at' => $tag->created_at,
+                'updated_at' => $tag->updated_at,
+                'deleted_at' => $tag->deleted_ad
+            ]
         ]);
     }
 
