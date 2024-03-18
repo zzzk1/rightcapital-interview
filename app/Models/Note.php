@@ -15,15 +15,19 @@ class Note extends Model
     protected $table = 'notes';
     protected $dates = ['deleted_at'];
     protected $fillable = [
-        'title', 
+        'title',
         'content',
         'copy_times',
         'origin_mark'
     ];
-    
+    // json format will cause 'true' ---> 1
+    protected $casts = [
+        'origin_mark' => 'boolean',
+    ];
+
     use HasFactory;
     use SoftDeletes;
-    
+
     /**
      * This method use to find many tags for target note.
      *
