@@ -221,6 +221,11 @@ class NotePadService
         $numbers = $matches[1];
         $lastNumber = end($numbers);
 
+        if (!$lastNumber) {
+            $lastNumber = 0;
+            $templateTitle .= "(" . $lastNumber . ")";
+        }
+
         /**
          * Remove last "(number)"
          * eg: title(99)(99)(1) ---> title(99)(99)
@@ -256,7 +261,7 @@ class NotePadService
 
         return NOT_AVAILABLE_TITLE;
     }
-    
+
     /**
      * Generate a new title by copying the notepad title.
      *
