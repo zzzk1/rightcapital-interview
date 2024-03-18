@@ -190,7 +190,7 @@ class NotePadControllerTest extends TestCase
     }
 
     /**
-     * Test copy an origin notePad.
+     * Test copy an origin notePad. title doesn't contain (number)
      */
     public function testCopyWithOriginNotePad(): void
     {
@@ -262,7 +262,7 @@ class NotePadControllerTest extends TestCase
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
-            'title' => $note->title . "(99)(1)",
+            'title' => $note->title . "(3)",
             'content' => $note->content,
         ]);
 
@@ -284,7 +284,7 @@ class NotePadControllerTest extends TestCase
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
-            'title' => $note->title . "(99)(99)(99)(2)",
+            'title' => $note->title . "(4)",
             'content' => $note->content,
         ]);
     }

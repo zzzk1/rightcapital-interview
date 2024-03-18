@@ -119,93 +119,18 @@ class NotePadService
     {
         $metaNote = Note::find($id);
 
-        /**
-         * What is copied is a piece of metadata.Create a suffix by the number of times it is copied.
-         *
-         * DEFINE 'title' : table note's filed `title` metadata.
-         *
-         * eg:
-         * 'title' = "this is a title"
-         * 'title'(1) =  "this is a title"(1)
-         *
-         * ------------------ copy_times = 0 --------------------
-         * new title ----> 'title'(copy_times + 1)
-         * new title is "this is a title"(1)
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 1 --------------------
-         * new title ----> 'title'(copy_times + 1)
-         * new title is "this is a title(2)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 98 -------------------
-         * new title ----> 'title'(copy_times + 1)
-         * new title is "this is a title(99)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 99 -------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * new title ----> 'title'(99)((copy_times + 1) % 99)
-         * new title is "this is a title(99)(1)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 100 ------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * new title ----> 'title'(99)((copy_times + 1) % 99)
-         * new title is "this is a title(99)(2)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 198 ------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * ((copy_times + 1) / 99) = 2(TWO)
-         *
-         * we should add TWO (99) in new title
-         * new title is "this is a title(99)(99)(1)"
-         * ------------------------------------------------------
-         *
-         * ------------------ copy_times = 298 ------------------
-         * new title ----> 'title'(copy_times + 1)
-         * copy_times + 1 > 99(default limit 99)
-         *
-         * ((copy_times + 1) / 99) = 3(THREE)
-         *
-         * we should add THREE (99) in new title
-         * new title is "this is a title(99)(99)(99)(2)"
-         * -----------------------------------------------------
-         */
-        if ($metaNote->origin_mark) {
-            $clonedNote = new Note();
-            $clonedNote->title = $this->incrementTitleSuffix($metaNote);
-            $clonedNote->content = $metaNote->content;
-            $clonedNote->copy_times = 0;
-            $clonedNote->origin_mark = false;
-            $clonedNote->save();
+        $clonedNote = new Note();
+        $clonedNote->title = $this->generateUniqueTitle($metaNote);
+        $clonedNote->content = $metaNote->content;
+        $clonedNote->copy_times = 0;
+        $clonedNote->origin_mark = false;
+        $clonedNote->save();
 
-            // bind new relationship.
-            $tagIdList = $request->tagIdList;
-            $clonedNote->tags()->attach($tagIdList);
+        // bind new relationship.
+        $tagIdList = $request->tagIdList;
+        $clonedNote->tags()->attach($tagIdList);
 
-            return $clonedNote;
-        } else {
-
-            /**
-             * ------------------ title = "title(1)" --------------------
-             *
-             * ------------------ title = "title(98)" --------------------
-             *
-             * ------------------ title = "title(99)" --------------------
-             */
-            //TODO what if title like "title(1)" ?
-
-
-            return null;
-        }
+        return $clonedNote;
     }
 
     private function generateUniqueTitle($metaNote)
@@ -221,6 +146,7 @@ class NotePadService
         $numbers = $matches[1];
         $lastNumber = end($numbers);
 
+        // if title hasn't a (number), we append one.
         if (!$lastNumber) {
             $lastNumber = 0;
             $templateTitle .= "(" . $lastNumber . ")";
@@ -243,7 +169,7 @@ class NotePadService
             for ( ;$lastNumber < LIMIT; ) {
                 $lastNumber += 1;
                 $tempCellTitle = $templateTitle . "(" . $lastNumber . ")";
-                $clonedNote = Note::withTrashed($tempCellTitle);
+                $clonedNote = Note::withTrashed()->where('title', $tempCellTitle)->first();;
 
                 // We find it, now return the value.
                 if ($clonedNote == null) {
@@ -264,6 +190,66 @@ class NotePadService
 
     /**
      * Generate a new title by copying the notepad title.
+     *
+     * /**
+     *  What is copied is a piece of metadata.Create a suffix by the number of times it is copied.
+     *
+     *  DEFINE 'title' : table note's filed `title` metadata.
+     *
+     *  eg:
+     *  'title' = "this is a title"
+     *  'title'(1) =  "this is a title"(1)
+     *
+     *  ------------------ copy_times = 0 --------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  new title is "this is a title"(1)
+     *  ------------------------------------------------------
+     *
+     *  ------------------ copy_times = 1 --------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  new title is "this is a title(2)"
+     *  ------------------------------------------------------
+     *
+     *  ------------------ copy_times = 98 -------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  new title is "this is a title(99)"
+     *  ------------------------------------------------------
+     *
+     *  ------------------ copy_times = 99 -------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  copy_times + 1 > 99(default limit 99)
+     *
+     *  new title ----> 'title'(99)((copy_times + 1) % 99)
+     *  new title is "this is a title(99)(1)"
+     *  ------------------------------------------------------
+     *
+     *  ------------------ copy_times = 100 ------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  copy_times + 1 > 99(default limit 99)
+     *
+     *  new title ----> 'title'(99)((copy_times + 1) % 99)
+     *  new title is "this is a title(99)(2)"
+     *  ------------------------------------------------------
+     *
+     *  ------------------ copy_times = 198 ------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  copy_times + 1 > 99(default limit 99)
+     *
+     *  ((copy_times + 1) / 99) = 2(TWO)
+     *
+     *  we should add TWO (99) in new title
+     *  new title is "this is a title(99)(99)(1)"
+     *  ------------------------------------------------------
+     *
+     *  ------------------ copy_times = 298 ------------------
+     *  new title ----> 'title'(copy_times + 1)
+     *  copy_times + 1 > 99(default limit 99)
+     *
+     *  ((copy_times + 1) / 99) = 3(THREE)
+     *
+     *  we should add THREE (99) in new title
+     *  new title is "this is a title(99)(99)(99)(2)"
+     *  -----------------------------------------------------
      *
      * @param $metaNote data source.
      * @return string new title.
