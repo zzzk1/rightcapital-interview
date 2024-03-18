@@ -43,7 +43,7 @@ class NoteControllerTest extends TestCase
         ];
 
         $response = $this->post(route('notes.store'), $storeData);
-        $response->assertRedirect(route('notes.index'));
+        $response->assertStatus(200);
 
         $this->assertDatabaseHas('notes', $storeData);
     }
@@ -59,11 +59,17 @@ class NoteControllerTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertJson([
-            'id' => $note->id,
-            'title' => $note->title,
-            'content' => $note->content,
-            'copy_times' => $note->copy_times,
-            'origin_mark' => $note->origin_mark,
+            'message' => 'get successful',
+            'data' => [
+                'id' => $note->id,
+                'title' => $note->title,
+                'content' => $note->content,
+                'created_at' => $note->created_at->toISOString(),
+                'updated_at' => $note->updated_at->toISOString(),
+                'deleted_at' => $note->deleted_at ? $note->deleted_at->toISOString() : null,
+                'copy_times' => $note->copy_times,
+                'origin_mark' => $note->origin_mark,
+            ],
         ]);
     }
 

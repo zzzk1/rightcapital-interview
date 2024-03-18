@@ -2,18 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Note;
+use App\Services\NoteService;
+use App\Utils\ApiResult;
 use Illuminate\Http\Request;
 
 class NoteController extends Controller
 {
+    protected $noteService;
+
+    public function __construct(NoteService $noteService)
+    {
+        $this->noteService = $noteService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $note = Note::all();
-        return response()->json($note);
+        $noteList = $this->noteService->listAll();
+        return ApiResult::success("list successful", $noteList);
     }
 
     /**
@@ -29,8 +37,8 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
-        Note::create($request->all());
-        return redirect()->route('notes.index');
+        $stored = $this->noteService->storeOne($request);
+        return ApiResult::success("stored successful", $stored);
     }
 
     /**
@@ -38,8 +46,8 @@ class NoteController extends Controller
      */
     public function show(string $id)
     {
-        $note = Note::findOrFail($id);
-        return response()->json($note);
+        $note = $this->noteService->getOne($id);
+        return ApiResult::success("get successful", $note);
     }
 
     /**
@@ -47,8 +55,8 @@ class NoteController extends Controller
      */
     public function edit(string $id)
     {
-        $note = Note::findOrFail($id);
-        return response()->json($note);
+        $note = $this->noteService->getOne($id);
+        return ApiResult::success("edited successful", $note);
     }
 
     /**
@@ -56,10 +64,8 @@ class NoteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $note = Note::findOrFail($id);
-        $note->fill($request->all());
-        $note->save();
-        return response()->json($note);
+        $updated = $this->noteService->updateOne($request, $id);
+        return ApiResult::success("updated successful", $updated);
     }
 
     /**
@@ -67,8 +73,7 @@ class NoteController extends Controller
      */
     public function destroy(string $id)
     {
-        $note = Note::findOrFail($id);
-        $note->delete();
-        return response()->json();
+        $removed = $this->noteService->removedOne($id);
+        return ApiResult::success("removed successful", $removed);
     }
 }
