@@ -26,14 +26,6 @@ class TagController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -49,15 +41,6 @@ class TagController extends Controller
     {
         $tag = $this->tagService->getOne($id);
         return ApiResult::success("get successful", $tag);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $tag = $this->tagService->getOne($id);
-        return ApiResult::success("edited successful", $tag);
     }
 
     /**

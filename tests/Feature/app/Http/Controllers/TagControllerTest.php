@@ -72,29 +72,6 @@ class TagControllerTest extends TestCase
     }
 
     /**
-     * Test getting an edit tag.
-     */
-    public function testEdit()
-    {
-        $tag = Tag::factory()->create();
-
-        $response = $this->get(route('tags.edit', ['id' => $tag->id]));
-        $response->assertStatus(200);
-
-        // Check if the data exists in the response
-        $response->assertJsonFragment([
-            'message' => 'edited successful',
-            'data' => [
-                'id' => $tag->id,
-                'name' => $tag->name,
-                'created_at' => $tag->created_at,
-                'updated_at' => $tag->updated_at,
-                'deleted_at' => $tag->deleted_ad
-            ]
-        ]);
-    }
-
-    /**
      * Test updating a tag.
      */
     public function testUpdate()
