@@ -31,14 +31,12 @@ Route::prefix('tags')->group(function () {
     Route::delete('/{id}', [TagController::class, 'destroy'])->name('tags.destroy');
 });
 
-Route::prefix('notepad')->group(function () {
-    Route::get('/', [NotePadController::class, 'index'])->name('notepad.index');
-    Route::get('/create', [NotePadController::class, 'create'])->name('notepad.create');
-    Route::post('/', [NotePadController::class, 'store'])->name('notepad.store');
-    Route::get('/{id}', [NotePadController::class, 'show'])->name('notepad.show');
-    Route::get('/{id}/edit', [NotePadController::class, 'edit'])->name('notepad.edit');
-    Route::put('/{id}', [NotePadController::class, 'update'])->name('notepad.update');
-    Route::delete('/{id}', [NotePadController::class, 'destroy'])->name('notepad.destroy');
-    Route::put('/{id}/restore', [NotePadController::class, 'restore'])->name('notepad.restore');
-    Route::post('/{id}/copy', [NotePadController::class, 'copy'])->name('notepad.copy');
+Route::prefix('notepads')->group(function () {
+    Route::get('/', [NotePadController::class, 'index'])->name('notepads.index');
+    Route::post('/', [NotePadController::class, 'store'])->name('notepads.store');
+    Route::get('/{id}', [NotePadController::class, 'show'])->name('notepads.show');
+    Route::put('/{id}', [NotePadController::class, 'update'])->name('notepads.update');
+    Route::delete('/{id}', [NotePadController::class, 'destroy'])->name('notepads.destroy');
+    Route::put('/restore/{id}', [NotePadController::class, 'restore'])->name('notepads.restore');
+    Route::post('/copy/{id}', [NotePadController::class, 'copy'])->name('notepads.copy');
 });

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\app\Http\Controllers;
 
 use App\Models\Note;
 use App\Models\Tag;
@@ -23,7 +23,7 @@ class NotePadControllerTest extends TestCase
             $note->tags()->attach($tagList);
         }
 
-        $response = $this->get(route('notepad.index'));
+        $response = $this->get(route('notepads.index'));
         $response->assertStatus(200);
 
         foreach ($noteList as $note) {
@@ -54,7 +54,7 @@ class NotePadControllerTest extends TestCase
             'tagIdList' => $tagList->pluck('id')->toArray()
         ];
 
-        $response = $this->postJson(route('notepad.store'), $requestData);
+        $response = $this->postJson(route('notepads.store'), $requestData);
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -81,36 +81,11 @@ class NotePadControllerTest extends TestCase
     {
         $notePad = Note::factory()->create();
 
-        $response = $this->getJson(route('notepad.show', ['id' => $notePad->id]));
+        $response = $this->getJson(route('notepads.show', ['id' => $notePad->id]));
         $response->assertStatus(200);
 
         $response->assertJson([
             'message' => 'get successful',
-            'data' => [
-                'id' => $notePad->id,
-                'title' => $notePad->title,
-                'content' => $notePad->content,
-                'created_at' => $notePad->created_at->toISOString(),
-                'updated_at' => $notePad->updated_at->toISOString(),
-                'deleted_at' => $notePad->deleted_at ? $notePad->deleted_at->toISOString() : null,
-                'copy_times' => $notePad->copy_times,
-                'origin_mark' => $notePad->origin_mark,
-            ],
-        ]);
-    }
-
-    /**
-     * Test getting a notePad.
-     */
-    public function testEdit()
-    {
-        $notePad = Note::factory()->create();
-
-        $response = $this->get(route('notepad.edit', ['id' => $notePad->id]));
-        $response->assertStatus(200);
-
-        $response->assertJson([
-            'message' => 'edit successful',
             'data' => [
                 'id' => $notePad->id,
                 'title' => $notePad->title,
@@ -143,7 +118,7 @@ class NotePadControllerTest extends TestCase
             'tagIdList' => $tagIdList
         ];
 
-        $response = $this->putJson(route('notepad.update', ['id' => $notePad->id]), $updatedData);
+        $response = $this->putJson(route('notepads.update', ['id' => $notePad->id]), $updatedData);
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -169,7 +144,7 @@ class NotePadControllerTest extends TestCase
     {
         $notePad = Note::factory()->create();
 
-        $response = $this->deleteJson(route('notepad.destroy', ['id' => $notePad->id]));
+        $response = $this->deleteJson(route('notepads.destroy', ['id' => $notePad->id]));
         $response->assertStatus(200);
 
         $this->assertSoftDeleted('notes', ['id' => $notePad->id]);
@@ -183,7 +158,7 @@ class NotePadControllerTest extends TestCase
         $notePad = Note::factory()->create();
         $notePad->delete();
 
-        $response = $this->putJson(route('notepad.restore', ['id' => $notePad->id]));
+        $response = $this->putJson(route('notepads.restore', ['id' => $notePad->id]));
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('notes', ['id' => $notePad->id]);
@@ -213,7 +188,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -236,7 +211,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -258,7 +233,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -280,7 +255,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
         $resp->assertStatus(200);
 
         $this->assertDatabaseHas('notes', [
@@ -310,7 +285,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -334,7 +309,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -358,7 +333,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -382,7 +357,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //sent request
-        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -429,7 +404,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //----------------------------send request -------------------------------
-        $resp = $this->post(route('notepad.copy', ['id' => $note1->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note1->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -476,7 +451,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //----------------------------send request -------------------------------
-        $resp = $this->post(route('notepad.copy', ['id' => $note1->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note1->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 
@@ -523,7 +498,7 @@ class NotePadControllerTest extends TestCase
         ];
 
         //----------------------------send request -------------------------------
-        $resp = $this->post(route('notepad.copy', ['id' => $note1->id]), $requestCopyNote);
+        $resp = $this->post(route('notepads.copy', ['id' => $note1->id]), $requestCopyNote);
 
         $resp->assertStatus(200);
 

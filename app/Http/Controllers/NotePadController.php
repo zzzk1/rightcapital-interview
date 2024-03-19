@@ -30,14 +30,6 @@ class NotePadController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @Param Request $request
@@ -61,19 +53,6 @@ class NotePadController extends Controller
         $notePad = $this->notePadService->getOne($id);
 
         return ApiResult::success("get successful", $notePad);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param string $id table note primary key.
-     * @return JsonResponse Json data contains notePad.
-     */
-    public function edit(string $id): JsonResponse
-    {
-        $notePad = $this->notePadService->getOne($id);
-
-        return ApiResult::success("edit successful", $notePad);
     }
 
     /**
