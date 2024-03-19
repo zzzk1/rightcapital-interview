@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CopyNotePadRequest;
+use App\Http\Requests\CreateNotePadRequest;
+use App\Http\Requests\CreateTagRequest;
+use App\Http\Requests\UpdateNotePadRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 use App\Services\NotePadService;
 use App\Utils\ApiResult;
@@ -32,10 +35,10 @@ class NotePadController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @Param Request $request
+     * @param CreateNotePadRequest $request
      * @return JsonResponse Json data contains notePad.
      */
-    public function store(Request $request): JsonResponse
+    public function store(CreateNotePadRequest $request): JsonResponse
     {
         $saved = $this->notePadService->saveOne($request);
 
@@ -58,11 +61,11 @@ class NotePadController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @Param Request $request
+     * @param UpdateNotePadRequest $request
      * @param string $id table note primary key.
      * @return JsonResponse Json data contains notePad.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(UpdateNotePadRequest $request, string $id): JsonResponse
     {
         $updated = $this->notePadService->updateOne($request, $id);
 
@@ -96,11 +99,11 @@ class NotePadController extends Controller
     /**
      * Clone an exist notePad.
      *
-     * @Param request $request request contains note data, a list of tags.
+     * @param CopyNotePadRequest $request
      * @param string $id table note primary key.
      * @return JsonResponse Json data contains notePad.
      */
-    public function copy(request $request, string $id): JsonResponse
+    public function copy(CopyNotePadRequest $request, string $id): JsonResponse
     {
         $copied = $this->notePadService->copyOne($request, $id);
         return ApiResult::success("copied successful", $copied);

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\NoteService;
+use App\Http\Requests\CreateTagRequest;
+use App\Http\Requests\UpdateTagRequest;
+
 use App\Services\TagService;
 use App\Utils\ApiResult;
-use Illuminate\Http\Request;
+
 
 class TagController extends Controller
 {
@@ -28,7 +30,7 @@ class TagController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateTagRequest $request)
     {
         $stored = $this->tagService->storeOne($request);
         return ApiResult::success("stored successful", $stored);
@@ -46,7 +48,7 @@ class TagController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateTagRequest $request, string $id)
     {
         $updated = $this->tagService->updateOne($request, $id);
         return ApiResult::success("updated successful", $updated);
