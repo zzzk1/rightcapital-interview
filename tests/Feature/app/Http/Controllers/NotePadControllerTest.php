@@ -192,7 +192,7 @@ class NotePadControllerTest extends TestCase
     /**
      * Test copy an origin notePad. title doesn't contain (number)
      */
-    public function testCopyWithOriginNotePad(): void
+    public function testCopyWithOriginNoteWithIncreasingOrder(): void
     {
         $note = Note::factory()->create();
         $tagList = Tag::factory()->count(5)->create();
@@ -286,6 +286,250 @@ class NotePadControllerTest extends TestCase
         $this->assertDatabaseHas('notes', [
             'title' => $note->title . "(4)",
             'content' => $note->content,
+        ]);
+    }
+
+    public function testCopyWithOutOriginNotePadIncreasingOrder()
+    {
+        $note = Note::factory()->create();
+        $tagList = Tag::factory()->count(5)->create();
+        $note->tags()->attach($tagList);
+
+        //----------------------------test----------------------------
+        $note->title = "Hello World(1)";
+        $note->copy_times = 0;
+        $note->origin_mark = true;
+        $note->save();
+
+        $requestCopyNote = [
+            'title' => $note->title,
+            'content' => $note->content,
+            'copy_times' => $note->copy_times,
+            'origin_mark' => $note->origin_mark,
+            'tagIds' => $tagList->pluck('id')->toArray()
+        ];
+
+        //sent request
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(2)",
+            'content' => $note->content,
+        ]);
+
+        //----------------------------test----------------------------
+        $note->title = "Hello World(98)";
+        $note->copy_times = 0;
+        $note->origin_mark = true;
+        $note->save();
+
+        $requestCopyNote = [
+            'title' => $note->title,
+            'content' => $note->content,
+            'copy_times' => $note->copy_times,
+            'origin_mark' => $note->origin_mark,
+            'tagIds' => $tagList->pluck('id')->toArray()
+        ];
+
+        //sent request
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(99)",
+            'content' => $note->content,
+        ]);
+
+        //----------------------------test----------------------------
+        $note->title = "Hello World(99)";
+        $note->copy_times = 0;
+        $note->origin_mark = true;
+        $note->save();
+
+        $requestCopyNote = [
+            'title' => $note->title,
+            'content' => $note->content,
+            'copy_times' => $note->copy_times,
+            'origin_mark' => $note->origin_mark,
+            'tagIds' => $tagList->pluck('id')->toArray()
+        ];
+
+        //sent request
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(99)(1)",
+            'content' => $note->content,
+        ]);
+
+        //----------------------------test----------------------------
+        $note->title = "Hello World(99)(2)";
+        $note->copy_times = 0;
+        $note->origin_mark = true;
+        $note->save();
+
+        $requestCopyNote = [
+            'title' => $note->title,
+            'content' => $note->content,
+            'copy_times' => $note->copy_times,
+            'origin_mark' => $note->origin_mark,
+            'tagIds' => $tagList->pluck('id')->toArray()
+        ];
+
+        //sent request
+        $resp = $this->post(route('notepad.copy', ['id' => $note->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(99)(3)",
+            'content' => $note->content,
+        ]);
+    }
+
+    public function testCopyWithOutOriginNotePad1()
+    {
+        //----------------------------creat test data ----------------------------
+        $note1 = Note::factory()->create();
+        $tagList1 = Tag::factory()->count(2)->create();
+        $note1->tags()->attach($tagList1);
+        $note1->title = "Hello World(1)";
+        $note1->copy_times = 0;
+        $note1->origin_mark = true;
+        $note1->save();
+
+        $note2 = Note::factory()->create();
+        $tagList2 = Tag::factory()->count(2)->create();
+        $note2->tags()->attach($tagList2);
+        $note2->title = "Hello World(2)";
+        $note2->copy_times = 0;
+        $note2->origin_mark = true;
+        $note2->save();
+
+        $note3 = Note::factory()->create();
+        $tagList3 = Tag::factory()->count(2)->create();
+        $note3->tags()->attach($tagList3);
+        $note3->title = "Hello World(3)";
+        $note3->copy_times = 0;
+        $note3->origin_mark = true;
+        $note3->save();
+
+        //----------------------------creat copy data ----------------------------
+        $requestCopyNote = [
+            'title' => $note1->title,
+            'content' => $note1->content,
+            'copy_times' => $note1->copy_times,
+            'origin_mark' => $note1->origin_mark,
+            'tagIds' => $tagList1->pluck('id')->toArray()
+        ];
+
+        //----------------------------send request -------------------------------
+        $resp = $this->post(route('notepad.copy', ['id' => $note1->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(4)",
+            'content' => $note1->content,
+        ]);
+    }
+
+    public function testCopyWithOutOriginNotePad2()
+    {
+        //----------------------------creat test data ----------------------------
+        $note1 = Note::factory()->create();
+        $tagList1 = Tag::factory()->count(2)->create();
+        $note1->tags()->attach($tagList1);
+        $note1->title = "Hello World(99)";
+        $note1->copy_times = 0;
+        $note1->origin_mark = true;
+        $note1->save();
+
+        $note2 = Note::factory()->create();
+        $tagList2 = Tag::factory()->count(2)->create();
+        $note2->tags()->attach($tagList2);
+        $note2->title = "Hello World(99)(1)";
+        $note2->copy_times = 0;
+        $note2->origin_mark = true;
+        $note2->save();
+
+        $note3 = Note::factory()->create();
+        $tagList3 = Tag::factory()->count(2)->create();
+        $note3->tags()->attach($tagList3);
+        $note3->title = "Hello World(99)(2)";
+        $note3->copy_times = 0;
+        $note3->origin_mark = true;
+        $note3->save();
+
+        //----------------------------creat copy data ----------------------------
+        $requestCopyNote = [
+            'title' => $note1->title,
+            'content' => $note1->content,
+            'copy_times' => $note1->copy_times,
+            'origin_mark' => $note1->origin_mark,
+            'tagIds' => $tagList1->pluck('id')->toArray()
+        ];
+
+        //----------------------------send request -------------------------------
+        $resp = $this->post(route('notepad.copy', ['id' => $note1->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(99)(3)",
+            'content' => $note1->content,
+        ]);
+    }
+
+    public function testCopyWithOutOriginNotePad3()
+    {
+        //----------------------------creat test data ----------------------------
+        $note1 = Note::factory()->create();
+        $tagList1 = Tag::factory()->count(2)->create();
+        $note1->tags()->attach($tagList1);
+        $note1->title = "Hello World(99)(99)";
+        $note1->copy_times = 0;
+        $note1->origin_mark = true;
+        $note1->save();
+
+        $note2 = Note::factory()->create();
+        $tagList2 = Tag::factory()->count(2)->create();
+        $note2->tags()->attach($tagList2);
+        $note2->title = "Hello World(99)(99)(1)";
+        $note2->copy_times = 0;
+        $note2->origin_mark = true;
+        $note2->save();
+
+        $note3 = Note::factory()->create();
+        $tagList3 = Tag::factory()->count(2)->create();
+        $note3->tags()->attach($tagList3);
+        $note3->title = "Hello World(99)(99)(2)";
+        $note3->copy_times = 0;
+        $note3->origin_mark = true;
+        $note3->save();
+
+        //----------------------------creat copy data ----------------------------
+        $requestCopyNote = [
+            'title' => $note1->title,
+            'content' => $note1->content,
+            'copy_times' => $note1->copy_times,
+            'origin_mark' => $note1->origin_mark,
+            'tagIds' => $tagList1->pluck('id')->toArray()
+        ];
+
+        //----------------------------send request -------------------------------
+        $resp = $this->post(route('notepad.copy', ['id' => $note1->id]), $requestCopyNote);
+
+        $resp->assertStatus(200);
+
+        $this->assertDatabaseHas('notes', [
+            'title' => "Hello World(99)(99)(3)",
+            'content' => $note1->content,
         ]);
     }
 }

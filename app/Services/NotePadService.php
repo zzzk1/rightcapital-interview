@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Note;
@@ -7,6 +8,7 @@ use Illuminate\Http\Request;
 
 define("LIMIT", 99);
 define("NOT_AVAILABLE_TITLE", "not available title");
+
 class NotePadService
 {
     /**
@@ -57,7 +59,7 @@ class NotePadService
      * @param Request $request
      * @return Note target notePad.
      */
-    public function saveOne(Request $request):Note
+    public function saveOne(Request $request): Note
     {
         // search before save.
         $existNote = Note::where('title', $request->title)->first();
@@ -147,7 +149,7 @@ class NotePadService
         $lastNumber = end($numbers);
 
         // if title hasn't a (number), we append one.
-        if (!$lastNumber) {
+        if (!$lastNumber || $lastNumber == LIMIT) {
             $lastNumber = 0;
             $templateTitle .= "(" . $lastNumber . ")";
         }
@@ -166,7 +168,7 @@ class NotePadService
              * In this for loop try to search a not existed record.
              * Once we find it then means we find an available title.
              */
-            for ( ;$lastNumber < LIMIT; ) {
+            for (; $lastNumber < LIMIT;) {
                 $lastNumber += 1;
                 $tempCellTitle = $templateTitle . "(" . $lastNumber . ")";
                 $clonedNote = Note::withTrashed()->where('title', $tempCellTitle)->first();;
@@ -183,7 +185,7 @@ class NotePadService
             $templateTitle .= "(" . LIMIT . ")";
 
             $lastNumber = 1;
-        } while($clonedNote != null);
+        } while ($clonedNote != null);
 
         return NOT_AVAILABLE_TITLE;
     }
