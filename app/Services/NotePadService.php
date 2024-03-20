@@ -135,7 +135,7 @@ class NotePadService
         return $clonedNote;
     }
 
-    private function generateUniqueTitle($metaNote)
+    private function generateUniqueTitle($metaNote): string
     {
         $templateTitle = $metaNote->title;
 
@@ -184,7 +184,7 @@ class NotePadService
              */
             $templateTitle .= "(" . LIMIT . ")";
 
-            $lastNumber = 1;
+            $lastNumber = 0;
         } while ($clonedNote != null);
 
         return NOT_AVAILABLE_TITLE;
